@@ -19,6 +19,10 @@ option_parser = OptionParser.new do |opts|
   opts.on("-a","--attachments", "Switch to upload DICOM pixeldata as attachments") do 
     options[:attachments] = true
   end
+  
+  opts.on("-j","--jpg_attachments", "Switch to upload WADO objects as attachments") do 
+    options[:jpg_attachments] = true
+  end
 
   opts.on("-f FOLDER", "Define the directory to be read") do |folder| 
     options[:folder] = folder
@@ -179,7 +183,7 @@ files.each_index do |i|
   end
 
   # Check if JPEG attachment is selected
-  if jpeg_attachment == true
+  if options[:jpg_attachments] == true
     # Load pixel data to ImageMagick class
     log.info("Attempting to load pixel data for file #{files[i]} ...")
     if dcm.image
