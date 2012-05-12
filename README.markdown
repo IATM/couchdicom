@@ -1,26 +1,42 @@
-#couchDICOM#
+#CouchDICOM#
 
 
-##DICOM object loader to CouchDB using Ruby DICOM##
-
+##DICOM object loader to CouchDB using Ruby DICOM and CouchREST##
 
 **Requeriments**
 
+* Ruby 1.9
 * ImageMagick
-* Ruby v. 1.9.2
-* Rails v. 3.x
-* Gems: couchrest, couchrest_extended_document, dicom v. 0.8, narray, iconv, pony
+* Bundler
+* Gems: couchrest, couchrest_model, dicom, rmagick
 
-**Note**
+**Installation**
 
-* The DICOM files could be uncompressed
-* Tha variable bind_addresss of the couch database must be equal to 0.0.0.0
+* Install Ruby 1.9 - We reccomend using RVM or rbenv + ruby_build
+* Install CouchDB - If you're a Mac user we recommend you install it via Homebrew (http://mxcl.github.com/homebrew/) with _brew install couchdb_
+* Install Imagemagick - If you're a Mac user we recommend you install it via Homebrew with _brew install imagemagick_
 
-**Instructions**
+* Install Bundler with 'gem install bundler'
+* Clone this repository and navigate to it's directory
+* Run 'bundle install' to have Bundler install the necessary gems
 
-* If you do not have ImageMagick and you are a MAC user we recommended you install it via Homebrew (http://mxcl.github.com/homebrew/)
-* Install the Gems required: gem install couchrest couchrest_extended_document dicom v. 0.8 narray iconv pony
-* If you want to create the DICOM Documents with the pixeldata as attachment run the script cdicom_attach_dicom.rb. If you just want to insert the metada DICOM run the script cdicom-noattach-nobulk.rb
-* Update the variable DB with the Database name of the couchDB database 
-* Update the variable DIRS with the DICOM directory path to scan
-* Run the selected Ruby Script: ruby cdicom-noattach-nobulk.rb
+**Configuration**
+
+* Modify the following variables as needed:
+* DIRS = The directory to be read
+* JPGDIR = The directory where JPEGS should be stored
+* DBURL = The Database URL. Use authentication if you set up users in your database 
+* DB_BULK_SAVE_CACHE_LIMIT = Bulk save cache maximum number of documents
+
+**Usage**
+
+In your terminal:
+
+_ruby couchdicom.rb_
+
+This should create the database and load all documents read from your DICOM files
+
+**Notes**
+
+* The DICOM files need to be uncompressed (for now)
+* Tha variable _bind_addresss_ in the couchDB database must be equal to 0.0.0.0 if you want to access the DB remotely
