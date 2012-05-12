@@ -22,7 +22,7 @@
 
 **Configuration**
 
-* Modify the following variables as needed:
+* Modify the following variables as needed for use as default in case of not options defined in the command line:
 * DIRS = The directory to be read
 * JPGDIR = The directory where JPEGS should be stored
 * DBURL = The Database URL. Use authentication if you set up users in your database 
@@ -34,7 +34,12 @@
 
 In your terminal:
 
-_ruby couchdicom.rb_
+_./couchdicom.rb [options]_
+
+-a, --attachments                Switch to upload DICOM pixeldata as attachments
+    -f FOLDER                        Define the directory to be read
+    -t JPG_FOLDER                    Define the directory where temporary JPEGS should be stored
+    -d DB_URL                        Define Database URL
 
 This should create the database and load all documents read from your DICOM files
 

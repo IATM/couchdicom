@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 # Modules required:
 require 'rubygems'
 require 'find'
@@ -5,12 +7,52 @@ require 'couchrest'
 require 'couchrest_model'
 require 'dicom'
 require 'rmagick'
+require 'optparse'
 include DICOM
 
+options = {}
+option_parser = OptionParser.new do |opts|
+  executable_name = File.basename($PROGRAM_NAME)
+  opts.banner = "Load the DICOM metadata contained in a folder in a COUCHDB database
+  Usage: ./#{executable_name} [options]
+  "
+  opts.on("-a","--attachments", "Switch to upload DICOM pixeldata as attachments") do 
+    options[:attachments] = true
+  end
+
+  opts.on("-f FOLDER", "Define the directory to be read") do |folder| 
+    options[:folder] = folder
+  end
+  
+  opts.on("-t JPG_FOLDER", "Define the directory where temporary JPEGS should be stored") do |jpg_folder| 
+    options[:jpg_folder] = jpg_folder
+  end
+  
+  opts.on("-d DB_URL", "Define Database URL") do |db_url| 
+    options[:db_url] = db_url
+  end 
+end
+option_parser.parse!
+
 # Constants
-DIRS = ["/Users/simonmd/Desktop/DATASETS/BOUVIER"] # Define the directory to be read
-JPGDIR = "/Users/simonmd/Desktop/WADOS" # Define the directory where temporary JPEGS should be stored
-DBURL = "http://admin:admin@localhost:5984/couchdicom" # Define Database URL. 
+if options[:folder]
+  DIRS = [options[:folder]]
+else
+  DIRS = ["/Users/simonmd/Desktop/DATASETS/BOUVIER"]
+end
+
+if options[:jpg_folder]
+  JPGDIR = options[:jpg_folder]
+else
+  JPGDIR = "/Users/simonmd/Desktop/WADOS"
+end
+
+if options[:db_url]
+  DBURL = options[:db_url]
+else
+  DBURL = "http://admin:admin@localhost:5984/couchdicom"
+end
+ 
 DB_BULK_SAVE_CACHE_LIMIT = 500 # Define Bulk save cache limit
 dicom_attachment = false # Define if DICOM files should be attached inside the CouchDB document
 jpeg_attachment = false # Define if JPEG files should be attached inside the CouchDB document (eg. for serving as WADO)
@@ -131,7 +173,7 @@ files.each_index do |i|
     currentdicom.docuid = h["t00080018"].to_s
 
   # Check if DICOM attachment is selected
-  if dicom_attachment == true
+  if options[:attachments] == true
     # Create the attachment from the actual dicom file
     currentdicom.create_attachment({:name => 'imagedata', :file => file, :content_type => 'application/dicom'})
   end
