@@ -40,11 +40,18 @@ In your terminal:
 _./couchdicom.rb [options]_
 
 * -a, --attachments                Switch to upload DICOM pixeldata as attachments
+* -j, -- jpg_attachments 		   Switch to upload WADO objects as jpg attachments
 * -f FOLDER                        Define the directory to be read
 * -t JPG_FOLDER                    Define the directory where temporary JPEGS should be stored
 * -d DB_URL                        Define Database URL
 
 This should create the database and load all documents read from your DICOM files
+
+**Usage**
+
+_./couchdicom.rb -a -j -f dicomFolder -t temporaryJpgFolder -d dbURL_
+
+_./couchdicom.rb -h_
 
 **Notes**
 
