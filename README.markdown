@@ -47,7 +47,7 @@ _./couchdicom.rb [options]_
 
 This should create the database and load all documents read from your DICOM files
 
-**Usage**
+**Example**
 
 _./couchdicom.rb -a -j -f dicomFolder -t temporaryJpgFolder -d dbURL_
 
