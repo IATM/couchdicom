@@ -12,8 +12,8 @@
 
 **Installation**
 
-* Install Ruby 1.9 - We reccomend using RVM or rbenv + ruby_build
-* Install CouchDB - If you're a Mac user we recommend you install it via Homebrew (http://mxcl.github.com/homebrew/) with _brew install couchdb_
+* Install Ruby 1.9 - We reccomend using [RVM](http://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv) + [ruby_build](https://github.com/sstephenson/ruby-build)
+* Install CouchDB - If you're a Mac user we recommend you install it via [Homebrew](http://mxcl.github.com/homebrew/) with _brew install couchdb_
 * Install Imagemagick - If you're a Mac user we recommend you install it via Homebrew with _brew install imagemagick_
 
 * Install Bundler with 'gem install bundler'
