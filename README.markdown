@@ -27,6 +27,8 @@
 * JPGDIR = The directory where JPEGS should be stored
 * DBURL = The Database URL. Use authentication if you set up users in your database 
 * DB_BULK_SAVE_CACHE_LIMIT = Bulk save cache maximum number of documents
+* dicom_attachment = Define if DICOM files should be attached inside the CouchDB document
+* jpeg_attachment = Define if JPEG files should be attached inside the CouchDB document (eg. for serving as WADO)
 
 **Usage**
 

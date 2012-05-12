@@ -9,9 +9,11 @@ include DICOM
 
 # Constants
 DIRS = ["/Users/simonmd/Desktop/DATASETS/BOUVIER"] # Define the directory to be read
-JPGDIR = "/Users/simonmd/Desktop/WADOS" # Define the directory where JPEGS should be stored
+JPGDIR = "/Users/simonmd/Desktop/WADOS" # Define the directory where temporary JPEGS should be stored
 DBURL = "http://admin:admin@localhost:5984/couchdicom" # Define Database URL. 
 DB_BULK_SAVE_CACHE_LIMIT = 500 # Define Bulk save cache limit
+dicom_attachment = false # Define if DICOM files should be attached inside the CouchDB document
+jpeg_attachment = false # Define if JPEG files should be attached inside the CouchDB document (eg. for serving as WADO)
 
 # Intialize logger
 log = Logger.new('couchdicom_import.log')
@@ -127,9 +129,15 @@ files.each_index do |i|
     currentdicom = Dicomdoc.new(h)
     # Set the document ID to the Instance Unique ID (UID)
     currentdicom.docuid = h["t00080018"].to_s
+
+  # Check if DICOM attachment is selected
+  if dicom_attachment == true
     # Create the attachment from the actual dicom file
     currentdicom.create_attachment({:name => 'imagedata', :file => file, :content_type => 'application/dicom'})
+  end
 
+  # Check if JPEG attachment is selected
+  if jpeg_attachment == true
     # Load pixel data to ImageMagick class
     log.info("Attempting to load pixel data for file #{files[i]} ...")
     if dcm.image
@@ -146,6 +154,7 @@ files.each_index do |i|
     else
       log.warn("could not read pixel data for file #{files[i]} ...")
     end
+  end
 
     # Save the CouchDB document
     begin
