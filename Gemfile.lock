@@ -19,6 +19,7 @@ GEM
       tzinfo (~> 0.3.22)
     dicom (0.9.3)
     i18n (0.6.0)
+    json (1.8.0)
     mime-types (1.18)
     multi_json (1.0.4)
     rest-client (1.6.7)
@@ -33,4 +34,6 @@ DEPENDENCIES
   couchrest
   couchrest_model
   dicom
+  json
+  rest-client
   rmagick
