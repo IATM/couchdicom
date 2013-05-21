@@ -71,6 +71,9 @@ log.info("Program started")
 DICOM.logger = log
 DICOM.logger.level = Logger::DEBUG
 
+# Set key_representation to remove spaces
+DICOM.key_use_tags
+
 # Create CouchDB database if it doesn't already exist
 db_create_result = RestClient.put(DBURL, '')
 
@@ -117,7 +120,7 @@ files.each_index do |i|
     file = File.new(files[i])
 
     # Set document id to SOP Instance UID (Should be unique)
-    dcmhash["_id"] = dcmhash["SOP Instance UID"]
+    dcmhash["_id"] = dcmhash["0008,0018"]
 
     #Convert DICOM hash to URI-encoded JSON
     dcmjson = dcmhash.to_json
