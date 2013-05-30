@@ -44,7 +44,7 @@ option_parser.parse!
 if options[:folder]
   DIRS = [options[:folder]]
 else
-  DIRS = ["/Users/simonmd/Desktop/DATASETS/BOUVIER"]
+  DIRS = ["/Users/simonmd/Desktop/mrptests"]
 end
 
 if options[:jpg_folder]
@@ -56,7 +56,7 @@ end
 if options[:db_url]
   DBURL = options[:db_url]
 else
-  DBURL = "http://admin:admin@localhost:5984/couchdicom"
+  DBURL = "http://localhost:5984/mrparametrix"
 end
  
 DB_BULK_SAVE_CACHE_LIMIT = 500 # Define Bulk save cache limit
@@ -75,7 +75,7 @@ DICOM.logger.level = Logger::DEBUG
 DICOM.key_use_tags
 
 # Create CouchDB database if it doesn't already exist
-db_create_result = RestClient.put(DBURL, '')
+# db_create_result = RestClient.put(DBURL, '')
 
 # Set the limit of documents for bulk updating
 # DB.bulk_save_cache_limit = DB_BULK_SAVE_CACHE_LIMIT
