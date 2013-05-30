@@ -3,13 +3,13 @@
 # Modules required:
 require 'rubygems'
 require 'find'
-require 'couchrest'
-require 'couchrest_model'
 require 'dicom'
 require 'rmagick'
 require 'optparse'
 require 'json/ext'
 require 'rest-client'
+require 'parallel'
+require 'ruby-progressbar'
 include DICOM
 
 options = {}
@@ -44,7 +44,7 @@ option_parser.parse!
 if options[:folder]
   DIRS = [options[:folder]]
 else
-  DIRS = ["/Users/simonmd/Desktop/mrptests"]
+  DIRS = ["/Users/simonmd/Desktop/mrptests/smallbatch"]
 end
 
 if options[:jpg_folder]
@@ -59,7 +59,6 @@ else
   DBURL = "http://localhost:5984/mrparametrix"
 end
  
-DB_BULK_SAVE_CACHE_LIMIT = 500 # Define Bulk save cache limit
 dicom_attachment = false # Define if DICOM files should be attached inside the CouchDB document
 jpeg_attachment = false # Define if JPEG files should be attached inside the CouchDB document (eg. for serving as WADO)
 
@@ -69,20 +68,22 @@ log.level = Logger::WARN
 log.debug("Created logger")
 log.info("Program started")
 DICOM.logger = log
-DICOM.logger.level = Logger::DEBUG
+DICOM.logger.level = Logger::WARN
 
 # Set key_representation to remove spaces
 DICOM.key_use_tags
 
+# Start message
+puts "CouchDICOM is starting..."
+
 # Create CouchDB database if it doesn't already exist
 # db_create_result = RestClient.put(DBURL, '')
-
-# Set the limit of documents for bulk updating
-# DB.bulk_save_cache_limit = DB_BULK_SAVE_CACHE_LIMIT
 
 # Discover all the files contained in the specified directory and all its sub-directories:
 excludes = ['DICOMDIR']
 files = Array.new()
+# Begin recursive directory search message
+puts "Looking for files in #{DIRS}"
 for dir in DIRS
   Find.find(dir) do |path|
     if FileTest.directory?(path)
@@ -96,28 +97,33 @@ for dir in DIRS
     end
   end
 end
+# Report how many files were found
+puts "Finished searching recursively through #{DIRS}, found #{files.size} files."
 
 # Start total timer
 total_start_time = Time.now
-
-# Use a loop to run through all the files, reading its data and transferring it to the database.
-files.each_index do |i|
+# Start message
+puts "Beginning CouchDICOM import for #{files.size} files..."
+# Initialize progress bar
+progress = ProgressBar.create(:title => "CouchDICOM import progress", :total => files.size)
+# Use a Parallel to run through all the files, reading its data and transferring it to the database.
+Parallel.map(files, :finish => lambda { |item, i| progress.increment }) do |dfile|
   iteration_start_time = Time.now
   # Read the file:
-  log.info("Attempting to read file #{files[i]} ...")
-  dcm = DObject.read(files[i])
+  log.info("Attempting to read file #{dfile} ...")
+  dcm = DObject.read(dfile)
   # If the file was read successfully as a DICOM file, go ahead and extract content:
   if dcm.read_success
-    log.info("Successfully read file #{files[i]}")
+    log.info("Successfully read file #{dfile}")
 
     # Convert DICOM tag structure to JSON:
     dcmhash = dcm.to_hash
 
     # Save filepath in hash
-    # h["_filepath"] = files[i]
+    # h["_filepath"] = dfile
 
     # Read in the dicom file as a 'file' object
-    file = File.new(files[i])
+    file = File.new(dfile)
 
     # Set document id to SOP Instance UID (Should be unique)
     dcmhash["_id"] = dcmhash["0008,0018"]
@@ -134,9 +140,9 @@ files.each_index do |i|
   # Check if JPEG attachment is selected
   if options[:jpg_attachments] == true
     # # Load pixel data to ImageMagick class
-    # log.info("Attempting to load pixel data for file #{files[i]} ...")
+    # log.info("Attempting to load pixel data for file #{dfile} ...")
     # if dcm.image
-    #   log.info("Pixel data for file #{files[i]} read successfully")
+    #   log.info("Pixel data for file #{dfile} read successfully")
     #   image = dcm.image.normalize
     #   # Save pixeldata as jpeg image in wado cache directory
     #   wadoimg_path = "#{JPGDIR}/wado-#{currentdicom.docuid}.jpg"
@@ -147,18 +153,16 @@ files.each_index do |i|
     #   # Create an attachment from the created jpeg
     #   currentdicom.create_attachment({:name => 'wadojpg', :file => wadofile, :content_type => 'image/jpeg'})
     # else
-    #   log.warn("could not read pixel data for file #{files[i]} ...")
+    #   log.warn("could not read pixel data for file #{dfile} ...")
     # end
   end
 
     # Save the CouchDB document
     begin
       document_create_result = RestClient.post DBURL, dcmjson, :content_type => :json, :accept => :json
-      # Uncomment if bulk saving is desired (Little performance gain, bottleneck is in dicom reads)
-      # currentdicom.save(bulk  = true)
       # If an error ocurrs, raise exception and log it
     rescue Exception => exc
-      log.warn("Could not save file #{files[i]} to database; Error: #{exc.message}")
+      log.warn("Could not save file #{dfile} to database; Error: #{exc.message}")
     end
 
   end
@@ -166,12 +170,15 @@ files.each_index do |i|
   # Log processing time for the file
   iteration_end_time = Time.now
   iterationtime = iteration_end_time - iteration_start_time
-  log.info("Iteration time for file #{i} finished in #{iterationtime} s")
+  log.info("Iteration time for file #{dfile} finished in #{iterationtime} s")
 end
 
 # Log total processing time
 total_end_time = Time.now
 totaltime = total_end_time - total_start_time
 log.info("Full processing time: #{totaltime} seconds")
+
+# Finished message
+puts "CouchDICOM finished importing #{files.size} files in #{totaltime} seconds, have a nice day!"
 # Close the logger
 log.close
